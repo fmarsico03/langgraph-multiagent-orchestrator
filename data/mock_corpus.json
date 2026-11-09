@@ -1,0 +1,26 @@
+[
+  {
+    "title": "[SIMULADO] Serie de inflación mensual - datos de ejemplo",
+    "url": "local://mock/inflacion-serie",
+    "tags": ["inflación", "ipc", "argentina", "mensual", "precios"],
+    "content": "Datos ficticios para pruebas offline. Inflación mensual (IPC, %): mes 1: 2.7, mes 2: 2.4, mes 3: 2.2, mes 4: 2.1, mes 5: 1.9, mes 6: 2.0. Fuente simulada; no usar como dato real."
+  },
+  {
+    "title": "[SIMULADO] Noticias sobre precios y consumo",
+    "url": "local://mock/noticias-precios",
+    "tags": ["noticias", "inflación", "consumo", "sentimiento"],
+    "content": "Titulares ficticios: 'La inflación desacelera por tercer mes consecutivo'; 'Preocupación por la caída del consumo masivo'; 'Analistas ven estabilidad en el tipo de cambio'; 'Crece la incertidumbre por los salarios'."
+  },
+  {
+    "title": "[SIMULADO] Adopción de frameworks multi-agente",
+    "url": "local://mock/multiagent-frameworks",
+    "tags": ["langgraph", "agentes", "multi-agente", "llm", "frameworks"],
+    "content": "Datos ficticios: estrellas en GitHub (miles) - LangGraph: 14, CrewAI: 30, AutoGen: 40. Comentarios de la comunidad: 'LangGraph da control fino del flujo'; 'La curva de aprendizaje es alta'; 'Excelente para producción con checkpoints'."
+  },
+  {
+    "title": "[SIMULADO] Precio de criptomonedas - serie semanal",
+    "url": "local://mock/cripto-serie",
+    "tags": ["bitcoin", "cripto", "precio", "semanal"],
+    "content": "Datos ficticios: precio de cierre semanal de BTC en miles de USD: 61.2, 63.5, 60.8, 65.1, 67.4, 66.9."
+  }
+]
