@@ -36,6 +36,8 @@ RÚBRICA DE VALIDACIÓN (aplicala antes de elegir FINISH; validation_passed=True
       recientes disponibles respecto de la FECHA DE HOY (no datos de hace un año si existen más nuevos).
 Si un criterio falla, delegá al especialista responsable con una `instruction` que incluya el feedback
 concreto de qué corregir. Si el analyst reportó DATOS_INSUFICIENTES, delegá al researcher.
+COHERENCIA: si el researcher entregó hallazgos NUEVOS después del último análisis, el análisis quedó
+desactualizado: delegá al analyst para que lo rehaga sobre los datos nuevos antes de elegir FINISH.
 Criterio de SUFICIENCIA: no busques perfección. Si los datos disponibles responden razonablemente la
 consulta y las limitaciones están declaradas, elegí FINISH.
 
@@ -73,6 +75,15 @@ Paso actual: {state.get('step_count', 0) + 1} de {state.get('max_steps', 8)}.
 Refinamientos usados: {state.get('revision_counts', {})} (máximo {MAX_REVISIONS} por agente)."""
 
 
+def _analysis_is_stale(state: OrchestratorState) -> bool:
+    """True si hay un análisis previo pero el researcher aportó algo después de él."""
+    agents = [c["agent"] for c in state.get("contributions", [])]
+    if "analyst" not in agents:
+        return False
+    last_analyst = len(agents) - 1 - agents[::-1].index("analyst")
+    return "researcher" in agents[last_analyst + 1 :]
+
+
 def supervisor_node(state: OrchestratorState) -> dict:
     step = state.get("step_count", 0) + 1
     max_steps = state.get("max_steps", 8)
@@ -98,6 +109,32 @@ def supervisor_node(state: OrchestratorState) -> dict:
     )
 
     if decision.next == "FINISH":
+        # Guardia de coherencia (en código): si el researcher refinó después del último análisis,
+        # el análisis está desactualizado -> se rehace antes de cerrar (respetando MAX_REVISIONS).
+        if _analysis_is_stale(state) and revisions.get("analyst", 0) < MAX_REVISIONS:
+            revisions["analyst"] = revisions.get("analyst", 0) + 1
+            instruction = (
+                "El investigador actualizó sus hallazgos después de tu último análisis. Rehacé el análisis "
+                f"completo sobre los datos nuevos para responder la consulta: {state['user_query']}"
+            )
+            return {
+                "next_agent": "analyst",
+                "current_instruction": instruction,
+                "validation_feedback": "Tu análisis anterior se basó en datos que ya fueron reemplazados.",
+                "step_count": step,
+                "revision_counts": revisions,
+                "decisions": [
+                    {
+                        "step": step,
+                        "next": "analyst",
+                        "reasoning": "Análisis desactualizado respecto de los últimos hallazgos: se rehace antes "
+                        f"de FINISH. (El supervisor proponía cerrar: {decision.reasoning})",
+                        "validation_passed": False,
+                        "forced": True,
+                    }
+                ],
+                "messages": [AIMessage(content=f"[supervisor -> analyst] {instruction}", name="supervisor")],
+            }
         return finish(decision.reasoning, False, decision.validation_passed)
 
     # ¿Es un refinamiento? (el agente ya había entregado algo)

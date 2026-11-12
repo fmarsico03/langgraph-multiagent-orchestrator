@@ -113,6 +113,7 @@ Si un criterio falla, el supervisor delega al responsable con un `feedback` conc
 - **Datos insuficientes o contradictorios:** el analista no completa datos faltantes y responde `DATOS_INSUFICIENTES: …`. El supervisor reenvía al investigador con ese feedback.
 - **Fuentes que no coinciden** (por ejemplo, 1,89 % vs 1,9 %): el investigador está obligado a reportar ambas con sus fuentes y a declararlo en *Limitaciones*. La síntesis lo informa.
 - **Datos con fuente sobre interpretaciones:** el analista no tiene búsqueda, así que solo puede trabajar con lo que el investigador encontró. Si el léxico de sentimiento contradice el contexto, el analista lo matiza explícitamente (se ve en la demo).
+- **Análisis desactualizado:** si el investigador refina sus hallazgos después de que el analista ya trabajó, el análisis viejo queda inconsistente con los datos nuevos. El prompt lo prohíbe, y además hay una guardia **en código** (`_analysis_is_stale`): si el supervisor elige `FINISH` en ese estado, se redirige al analista para que rehaga el análisis antes de cerrar (también cuenta para `MAX_REVISIONS`).
 - **Desacuerdo del supervisor con una entrega:** hay como máximo `MAX_REVISIONS = 2` refinamientos por agente. Pasado ese límite se cierra con lo disponible y se declara la limitación.
 
 ## Cómo se evitan los errores comunes
@@ -146,6 +147,7 @@ Además, el prompt incluye un **criterio de suficiencia** ("no busques perfecci�
 [demo.ipynb](demo.ipynb) muestra, ya ejecutado:
 
 1. **Caso 1:** supervisor → researcher → supervisor → analyst → supervisor (rúbrica OK) → synthesizer, con la tabla de `decisions` y `contributions`.
+   El recorrido depende de lo que devuelve la búsqueda. Si la rúbrica falla (por ejemplo, R5 recencia), el supervisor manda un **refinamiento** al researcher con feedback y la guardia de coherencia obliga al analyst a rehacer el análisis antes de cerrar: `… → researcher (refinamiento) → supervisor → analyst → supervisor → synthesizer`. Toda decisión queda registrada en `decisions` (con `forced=True` si la impuso una regla en código).
 2. **Caso 2:** `max_steps=2`, donde la regla de parada fuerza el cierre después de la investigación.
 
 ## Stack

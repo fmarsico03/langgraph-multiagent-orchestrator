@@ -37,7 +37,6 @@ outputs/
 Thumbs.db
 
 # Claude Code (config local)
-.claude/settings.local.json
-
+.claude/*
 # Contador local de créditos Tavily
 .tavily_usage.json
